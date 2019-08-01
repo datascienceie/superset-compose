@@ -1,0 +1,60 @@
+---
+version: '3'
+services:
+
+  ########################################################################
+  ## Database: PostgreSQL 10 on port: 5432 
+  ########################################################################
+  # Postgres - SQL Database
+  postgres:
+    image: postgres:10
+    container_name: 'superset_postgres'
+    restart: 'always'
+    env_file:
+      - ./config/postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+
+
+  ########################################################################
+  ## Visualization: superset on port 9000
+  ########################################################################
+  # Superset
+  superset:
+    image: tylerfowler/superset:0.28
+    container_name: 'superset_superset'
+    restart: 'always'
+    depends_on:
+      - postgres
+    env_file:
+      - ./config/superset.env
+    ports:
+      - 9000:9000
+
+
+  ########################################################################
+  ## Management tooling: pgadmin4 on port 9001
+  ########################################################################
+  # PGAdmin4 - Manage PostreSQL
+  pgadmin:
+    image: dpage/pgadmin4:4.11
+    container_name: 'datascience_pgadmin'
+    restart: 'always'
+    depends_on:
+      - postgres
+    env_file:
+      - ./config/pgadmin.env
+    ports:
+      - 9001:80
+    links:
+      - postgres
+
+############################
+## Volumes
+############################
+
+volumes:
+  postgres_data:
